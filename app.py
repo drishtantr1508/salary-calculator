@@ -19,6 +19,22 @@ from core.tax_engine import calculate_annual_tax, DEFAULT_STANDARD_DEDUCTION
 from core.report_exporter import simulation_to_dataframe, compare_with_naive_calculator
 
 SHORT_MONTHS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"]
+BOLD_MONTHS = ["𝗔𝗽𝗿", "𝗠𝗮𝘆", "𝗝𝘂𝗻", "𝗝𝘂𝗹", "𝗔𝘂𝗴", "𝗦𝗲𝗽", "𝗢𝗰𝘁", "𝗡𝗼𝘃", "𝗗𝗲𝗰", "𝗝𝗮𝗻", "𝗙𝗲𝗯", "𝗠𝗮𝗿"]
+BOLD_DIGITS = {'0':'𝟬','1':'𝟭','2':'𝟮','3':'𝟯','4':'𝟰','5':'𝟱','6':'𝟲','7':'𝟳','8':'𝟴','9':'𝟵'}
+NORM_DIGITS = {v: k for k, v in BOLD_DIGITS.items()}
+
+def to_bold_inr(val: float) -> str:
+    s = f"₹{round(val):,}"
+    return "".join(BOLD_DIGITS.get(c, c) for c in s)
+
+def parse_bold_val(v) -> float:
+    if isinstance(v, (int, float)):
+        return float(v)
+    clean = "".join(NORM_DIGITS.get(c, c) for c in str(v).replace("₹", "").replace(",", "").strip())
+    try:
+        return float(clean)
+    except Exception:
+        return 0.0
 
 st.set_page_config(
     page_title="Salary & TDS Simulator | Indian New Tax Regime",
@@ -154,6 +170,60 @@ st.markdown("""
         --gdg-text-header: #000000 !important;
         --gdg-text-group-header: #000000 !important;
         --gdg-bg-header: #f9fafb !important;
+        --gdg-header-font-style: 700 13px Inter, sans-serif !important;
+    }
+
+    /* High-Visibility Solid Filled Primary Buttons */
+    button[kind="primary"], div.stButton > button[kind="primary"], button[data-testid="baseButton-primary"] {
+        background-color: #111827 !important;
+        color: #ffffff !important;
+        border: 1.5px solid #111827 !important;
+        font-weight: 600 !important;
+        border-radius: 5px !important;
+        padding: 0.55rem 1rem !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.14) !important;
+        letter-spacing: -0.01em !important;
+        transition: all 0.15s ease !important;
+    }
+    button[kind="primary"]:hover, div.stButton > button[kind="primary"]:hover, button[data-testid="baseButton-primary"]:hover {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border-color: #000000 !important;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.24) !important;
+        transform: translateY(-1px);
+    }
+    button[kind="primary"] p, div.stButton > button[kind="primary"] p, button[data-testid="baseButton-primary"] p {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+
+    /* Solid Filled Style for Advanced Tax & TDS Settings */
+    div[data-testid="stExpander"] {
+        border: 1.5px solid #111827 !important;
+        border-radius: 5px !important;
+        overflow: hidden !important;
+        margin-top: 14px !important;
+        background: #ffffff !important;
+    }
+    div[data-testid="stExpander"] details summary {
+        background-color: #111827 !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        padding: 10px 14px !important;
+        border-radius: 0px !important;
+        transition: background-color 0.15s ease !important;
+    }
+    div[data-testid="stExpander"] details summary:hover {
+        background-color: #000000 !important;
+    }
+    div[data-testid="stExpander"] details summary svg {
+        fill: #ffffff !important;
+        color: #ffffff !important;
+    }
+    div[data-testid="stExpander"] details summary p,
+    div[data-testid="stExpander"] details summary span {
+        color: #ffffff !important;
+        font-weight: 600 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -475,7 +545,7 @@ with col_left:
     st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
     # Apply configuration to Monthly Table
-    if st.button("Apply Config to Monthly Table →", use_container_width=True):
+    if st.button("Apply Config to Monthly Table →", type="primary", use_container_width=True):
         st.session_state.base_ctc_input = ctc_in
         st.session_state.pf_selection = selected_pf_key
         st.session_state.custom_pf_val = custom_pf_val
@@ -541,6 +611,10 @@ with col_left:
             help="Upfront mode withholds bonus tax immediately so later months return to baseline take-home."
         )
         st.session_state.bonus_tax_mode = bonus_tax_mode
+
+        st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+        if st.button("Apply Advanced Tax Settings →", key="apply_adv_tax_btn", type="primary", use_container_width=True):
+            st.rerun()
 
 
 # ----------------- SIMULATION CALCULATION -----------------
@@ -660,15 +734,15 @@ with col_right:
             csv_data = simulation_to_dataframe(sim_result).to_csv(index=False).encode('utf-8')
             st.download_button("CSV", data=csv_data, file_name="monthly_payslips.csv", mime="text/csv", use_container_width=True)
 
-    # High-contrast upfront ordering: Month, Annual CTC, and Net In-Hand
+    # High-contrast upfront ordering: Month, Annual CTC, and Net In-Hand (Bold Core Columns)
     editor_rows = []
     for i, p in enumerate(sim_result.monthly_payslips):
         inp_row = st.session_state.table_inputs.iloc[i]
         editor_rows.append({
             "Month Index": p.month_index,
-            "Month": SHORT_MONTHS[p.month_index - 1],
-            "Annual CTC (₹)": float(inp_row["Annual CTC (₹)"]),
-            "Net In-Hand (₹)": round(p.net_in_hand),
+            "Month": BOLD_MONTHS[p.month_index - 1],
+            "Annual CTC (₹)": to_bold_inr(float(inp_row["Annual CTC (₹)"])),
+            "Net In-Hand (₹)": to_bold_inr(round(p.net_in_hand)),
             "PF (₹)": float(inp_row["PF Contribution (₹)"]),
             "Bonus (₹)": float(inp_row["Bonus (₹)"]),
             "Gross Salary (₹)": round(p.gross_salary),
@@ -686,18 +760,20 @@ with col_right:
         column_config={
             "Month Index": None,  # Hide
             "Month": st.column_config.TextColumn(
-                "Month",
-                width="small"
+                "𝗠𝗼𝗻𝘁𝗵",
+                width="small",
+                pinned=True
             ),
-            "Annual CTC (₹)": st.column_config.NumberColumn(
-                "Annual CTC (₹)",
-                min_value=0.0,
-                step=50000.0,
-                format="₹%d"
+            "Annual CTC (₹)": st.column_config.TextColumn(
+                "𝗔𝗻𝗻𝘂𝗮𝗹 𝗖𝗧𝗖 (₹)",
+                pinned=True,
+                help="Editable Annual CTC for this month"
             ),
-            "Net In-Hand (₹)": st.column_config.NumberColumn(
-                "Net In-Hand (₹)",
-                format="₹%d"
+            "Net In-Hand (₹)": st.column_config.TextColumn(
+                "𝗡𝗲𝘁 𝗜𝗻-𝗛𝗮𝗻𝗱 (₹)",
+                pinned=True,
+                disabled=True,
+                help="Calculated net monthly take-home"
             ),
             "PF (₹)": st.column_config.NumberColumn(
                 "PF (₹)",
@@ -739,16 +815,16 @@ with col_right:
     # Check if user made direct edits to CTC, PF, Bonus, or Notes
     inputs_changed = False
     for i in range(12):
-        old_ctc = st.session_state.table_inputs.at[i, "Annual CTC (₹)"]
-        new_ctc = edited_merged_df.at[i, "Annual CTC (₹)"]
-        old_pf = st.session_state.table_inputs.at[i, "PF Contribution (₹)"]
-        new_pf = edited_merged_df.at[i, "PF (₹)"]
-        old_bonus = st.session_state.table_inputs.at[i, "Bonus (₹)"]
-        new_bonus = edited_merged_df.at[i, "Bonus (₹)"]
-        old_notes = st.session_state.table_inputs.at[i, "Notes"]
-        new_notes = edited_merged_df.at[i, "Notes"]
+        old_ctc = float(st.session_state.table_inputs.at[i, "Annual CTC (₹)"])
+        new_ctc = parse_bold_val(edited_merged_df.at[i, "Annual CTC (₹)"])
+        old_pf = float(st.session_state.table_inputs.at[i, "PF Contribution (₹)"])
+        new_pf = float(edited_merged_df.at[i, "PF (₹)"])
+        old_bonus = float(st.session_state.table_inputs.at[i, "Bonus (₹)"])
+        new_bonus = float(edited_merged_df.at[i, "Bonus (₹)"])
+        old_notes = str(st.session_state.table_inputs.at[i, "Notes"])
+        new_notes = str(edited_merged_df.at[i, "Notes"])
 
-        if (old_ctc != new_ctc) or (old_pf != new_pf) or (old_bonus != new_bonus) or (old_notes != new_notes):
+        if (abs(old_ctc - new_ctc) > 0.01) or (abs(old_pf - new_pf) > 0.01) or (abs(old_bonus - new_bonus) > 0.01) or (old_notes != new_notes):
             inputs_changed = True
             st.session_state.table_inputs.at[i, "Annual CTC (₹)"] = new_ctc
             st.session_state.table_inputs.at[i, "PF Contribution (₹)"] = new_pf
