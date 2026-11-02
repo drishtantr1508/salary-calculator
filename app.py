@@ -150,7 +150,7 @@ st.markdown("""
     }
 
     .block-container {
-        padding-top: 1.2rem;
+        padding-top: 4.5rem !important;
         padding-bottom: 2.5rem;
         max-width: 1400px;
     }
@@ -441,7 +441,7 @@ st.markdown("""
     /* Responsive Mobile Layout Adjustments */
     @media (max-width: 768px) {
         .block-container {
-            padding-top: 0.8rem;
+            padding-top: 4.2rem !important;
             padding-left: 0.8rem;
             padding-right: 0.8rem;
         }
