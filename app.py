@@ -37,6 +37,54 @@ def parse_bold_val(v) -> float:
     except Exception:
         return 0.0
 
+# Presets and Formatting for Dropdown-Only Compensation Inputs
+HIKE_PCT_PRESETS = [
+    1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0,
+    11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0,
+    22.0, 25.0, 28.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 70.0,
+    75.0, 80.0, 90.0, 100.0, 125.0, 150.0, 200.0
+]
+
+HIKE_CTC_PRESETS = [
+    300000.0, 400000.0, 500000.0, 600000.0, 700000.0, 800000.0, 900000.0, 1000000.0,
+    1100000.0, 1200000.0, 1300000.0, 1400000.0, 1500000.0, 1600000.0, 1700000.0, 1800000.0,
+    1900000.0, 2000000.0, 2100000.0, 2200000.0, 2300000.0, 2400000.0, 2500000.0, 2600000.0,
+    2700000.0, 2800000.0, 3000000.0, 3200000.0, 3500000.0, 3800000.0, 4000000.0, 4500000.0,
+    5000000.0, 5500000.0, 6000000.0, 7000000.0, 7500000.0, 8000000.0, 9000000.0, 10000000.0,
+    12500000.0, 15000000.0, 20000000.0
+]
+
+BONUS_ABS_PRESETS = [
+    10000.0, 20000.0, 25000.0, 30000.0, 40000.0, 50000.0, 60000.0, 75000.0, 100000.0,
+    125000.0, 150000.0, 175000.0, 200000.0, 250000.0, 300000.0, 350000.0, 400000.0,
+    500000.0, 600000.0, 700000.0, 750000.0, 800000.0, 1000000.0, 1200000.0, 1500000.0,
+    2000000.0, 2500000.0, 3000000.0, 5000000.0
+]
+
+BONUS_PCT_PRESETS = [
+    1.0, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 8.0, 10.0,
+    12.0, 12.5, 15.0, 18.0, 20.0, 22.5, 25.0, 30.0, 35.0, 40.0, 50.0, 75.0, 100.0
+]
+
+def format_hike_pct(val: float) -> str:
+    return f"+{val:.0f}%" if float(val).is_integer() else f"+{val:.1f}%"
+
+def format_hike_ctc(val: float) -> str:
+    lakhs = val / 100_000.0
+    if lakhs >= 100:
+        cr = lakhs / 100.0
+        return f"₹{cr:.2f} Cr".replace(".00", "")
+    return f"₹{lakhs:.1f}L".replace(".0", "")
+
+def format_bonus_abs(val: float) -> str:
+    if val >= 100_000:
+        lakhs = val / 100_000.0
+        return f"₹{lakhs:.1f}L".replace(".0", "")
+    return f"₹{round(val):,}"
+
+def format_bonus_pct(val: float) -> str:
+    return f"{val:.0f}% CTC" if float(val).is_integer() else f"{val:.1f}% CTC"
+
 st.set_page_config(
     page_title="Salary & TDS Simulator | Indian New Tax Regime",
     page_icon="₹",
@@ -685,40 +733,48 @@ with col_left:
     else:
         hikes_to_remove = []
         for i, h in enumerate(st.session_state.hikes_list):
-            c1, c2, c3, c4 = st.columns([1.3, 1.6, 1.6, 0.6])
+            c1, c2, c3, c4 = st.columns([1.1, 2.0, 1.3, 0.5])
             with c1:
                 cur_mode = h.get("mode", "pct")
                 h["mode"] = st.selectbox(
                     f"Mode #{i+1}",
                     options=["pct", "absolute"],
-                    format_func=lambda x: "%" if x == "pct" else "₹ New CTC",
+                    format_func=lambda x: "% Hike" if x == "pct" else "₹ CTC",
                     index=0 if cur_mode == "pct" else 1,
                     key=f"hike_mode_select_{i}",
                     label_visibility="collapsed"
                 )
             with c2:
                 if h["mode"] == "pct":
-                    safe_val = min(200.0, max(0.5, float(h.get("pct_val", 10.0))))
-                    val = st.number_input(
+                    cur_val = float(h.get("pct_val", 10.0))
+                    opts = list(HIKE_PCT_PRESETS)
+                    if cur_val not in opts:
+                        opts.append(cur_val)
+                        opts.sort()
+                    sel_idx = opts.index(cur_val)
+                    val = st.selectbox(
                         f"Hike % #{i+1}",
-                        min_value=0.5,
-                        max_value=200.0,
-                        value=safe_val,
-                        step=1.0,
-                        key=f"hike_pct_input_{i}",
+                        options=opts,
+                        index=sel_idx,
+                        format_func=format_hike_pct,
+                        key=f"hike_pct_select_{i}",
                         label_visibility="collapsed"
                     )
                     h["pct_val"] = val
                     h["value"] = val
                 else:
-                    safe_val = min(50000000.0, max(100000.0, float(h.get("abs_val", 2500000.0))))
-                    val = st.number_input(
+                    cur_val = float(h.get("abs_val", 2000000.0))
+                    opts = list(HIKE_CTC_PRESETS)
+                    if cur_val not in opts:
+                        opts.append(cur_val)
+                        opts.sort()
+                    sel_idx = opts.index(cur_val)
+                    val = st.selectbox(
                         f"New CTC #{i+1}",
-                        min_value=100000.0,
-                        max_value=50000000.0,
-                        value=safe_val,
-                        step=50000.0,
-                        key=f"hike_abs_input_{i}",
+                        options=opts,
+                        index=sel_idx,
+                        format_func=format_hike_ctc,
+                        key=f"hike_abs_select_{i}",
                         label_visibility="collapsed"
                     )
                     h["abs_val"] = val
@@ -763,40 +819,48 @@ with col_left:
     else:
         bonuses_to_remove = []
         for i, b in enumerate(st.session_state.bonuses_list):
-            c1, c2, c3, c4 = st.columns([1.3, 1.6, 1.6, 0.6])
+            c1, c2, c3, c4 = st.columns([1.1, 2.0, 1.3, 0.5])
             with c1:
                 cur_mode = b.get("mode", "absolute")
                 b["mode"] = st.selectbox(
                     f"Bonus Mode #{i+1}",
                     options=["absolute", "pct"],
-                    format_func=lambda x: "₹ Amount" if x == "absolute" else "% of CTC",
+                    format_func=lambda x: "₹ Fixed" if x == "absolute" else "% CTC",
                     index=0 if cur_mode == "absolute" else 1,
                     key=f"bonus_mode_select_{i}",
                     label_visibility="collapsed"
                 )
             with c2:
                 if b["mode"] == "absolute":
-                    safe_val = min(50000000.0, max(0.0, float(b.get("abs_val", 100000.0))))
-                    val = st.number_input(
+                    cur_val = float(b.get("abs_val", 100000.0))
+                    opts = list(BONUS_ABS_PRESETS)
+                    if cur_val not in opts:
+                        opts.append(cur_val)
+                        opts.sort()
+                    sel_idx = opts.index(cur_val)
+                    val = st.selectbox(
                         f"Bonus ₹ #{i+1}",
-                        min_value=0.0,
-                        max_value=50000000.0,
-                        value=safe_val,
-                        step=10000.0,
-                        key=f"bonus_abs_input_{i}",
+                        options=opts,
+                        index=sel_idx,
+                        format_func=format_bonus_abs,
+                        key=f"bonus_abs_select_{i}",
                         label_visibility="collapsed"
                     )
                     b["abs_val"] = val
                     b["value"] = val
                 else:
-                    safe_val = min(100.0, max(0.5, float(b.get("pct_val", 10.0))))
-                    val = st.number_input(
+                    cur_val = float(b.get("pct_val", 10.0))
+                    opts = list(BONUS_PCT_PRESETS)
+                    if cur_val not in opts:
+                        opts.append(cur_val)
+                        opts.sort()
+                    sel_idx = opts.index(cur_val)
+                    val = st.selectbox(
                         f"Bonus % #{i+1}",
-                        min_value=0.5,
-                        max_value=100.0,
-                        value=safe_val,
-                        step=1.0,
-                        key=f"bonus_pct_input_{i}",
+                        options=opts,
+                        index=sel_idx,
+                        format_func=format_bonus_pct,
+                        key=f"bonus_pct_select_{i}",
                         label_visibility="collapsed"
                     )
                     b["pct_val"] = val
