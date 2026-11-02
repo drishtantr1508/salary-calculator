@@ -397,18 +397,84 @@ st.markdown("""
         color: var(--btn-secondary-text) !important;
     }
 
-    /* Delete / Remove Hike & Bonus Buttons */
+    /* Delete / Remove Hike & Bonus Buttons (Matching 40px Height and Centered) */
     button[aria-label="Remove hike"], button[aria-label="Remove bonus"] {
-        padding: 0 4px !important;
-        font-size: 1.15rem !important;
-        line-height: 1 !important;
-        min-height: 38px !important;
+        height: 40px !important;
+        min-height: 40px !important;
+        max-height: 40px !important;
+        width: 100% !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         color: var(--text-muted) !important;
-        border-color: var(--btn-secondary-border) !important;
+        border: 1px solid var(--btn-secondary-border) !important;
+        border-radius: 4px !important;
+    }
+    button[aria-label="Remove hike"] p, button[aria-label="Remove bonus"] p {
+        font-size: 1.3rem !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+        color: var(--text-muted) !important;
     }
     button[aria-label="Remove hike"]:hover, button[aria-label="Remove bonus"]:hover {
         color: #ef4444 !important;
         border-color: #ef4444 !important;
+    }
+    button[aria-label="Remove hike"]:hover p, button[aria-label="Remove bonus"]:hover p {
+        color: #ef4444 !important;
+    }
+
+    /* Selectbox Sizing & Non-Editable Display */
+    [data-baseweb="select"] {
+        font-size: 0.82rem !important;
+    }
+    [data-baseweb="select"] * {
+        font-size: 0.82rem !important;
+    }
+    [data-baseweb="select"] > div {
+        height: 40px !important;
+        min-height: 40px !important;
+        padding-left: 6px !important;
+        padding-right: 4px !important;
+        border-radius: 4px !important;
+        border-color: var(--border-subtle) !important;
+    }
+    [data-baseweb="select"] svg {
+        width: 12px !important;
+        height: 12px !important;
+    }
+    [data-baseweb="select"] input {
+        pointer-events: none !important;
+        caret-color: transparent !important;
+        cursor: pointer !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+    }
+
+    /* Complete Removal of Red Outlines and Focus Rings */
+    *, *:focus, *:focus-within, *:active {
+        outline: none !important;
+    }
+    [data-baseweb="select"] > div,
+    [data-baseweb="select"] > div:focus,
+    [data-baseweb="select"] > div:focus-within,
+    [data-baseweb="select"] > div:active,
+    [data-baseweb="select"][aria-expanded="true"] > div,
+    [data-baseweb="input"] > div,
+    [data-baseweb="input"] > div:focus,
+    [data-baseweb="input"] > div:focus-within,
+    [data-baseweb="input"] > div:active {
+        border-color: var(--border-subtle) !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+    [data-baseweb="select"]:focus-within > div,
+    [data-baseweb="select"][aria-expanded="true"] > div {
+        border-color: var(--tab-active, #ffffff) !important;
+        box-shadow: 0 0 0 1px var(--tab-active, #ffffff) !important;
     }
 
     /* Theme-Adaptive Filled Style for Advanced Tax & TDS Settings */
@@ -515,8 +581,28 @@ components.html(
                 targets.forEach(function(w) {
                     if (!w) return;
                     try {
+                        const makeSelectsReadOnly = function() {
+                            try {
+                                const inputs = w.document.querySelectorAll('[data-baseweb="select"] input');
+                                inputs.forEach(function(inp) {
+                                    inp.setAttribute('readonly', 'readonly');
+                                    inp.setAttribute('inputmode', 'none');
+                                    inp.style.caretColor = 'transparent';
+                                    inp.style.pointerEvents = 'none';
+                                });
+                            } catch(e) {}
+                        };
+                        makeSelectsReadOnly();
+
                         if (w.__taxHapticReady) return;
                         w.__taxHapticReady = true;
+
+                        const observer = new MutationObserver(function() {
+                            makeSelectsReadOnly();
+                        });
+                        if (w.document.body) {
+                            observer.observe(w.document.body, { childList: true, subtree: true });
+                        }
 
                         const triggerFeedback = function() {
                             try {
@@ -733,7 +819,7 @@ with col_left:
     else:
         hikes_to_remove = []
         for i, h in enumerate(st.session_state.hikes_list):
-            c1, c2, c3, c4 = st.columns([1.1, 2.0, 1.3, 0.5])
+            c1, c2, c3, c4 = st.columns([1.0, 1.0, 1.0, 0.45], gap="small")
             with c1:
                 cur_mode = h.get("mode", "pct")
                 h["mode"] = st.selectbox(
@@ -819,13 +905,13 @@ with col_left:
     else:
         bonuses_to_remove = []
         for i, b in enumerate(st.session_state.bonuses_list):
-            c1, c2, c3, c4 = st.columns([1.1, 2.0, 1.3, 0.5])
+            c1, c2, c3, c4 = st.columns([1.0, 1.0, 1.0, 0.45], gap="small")
             with c1:
                 cur_mode = b.get("mode", "absolute")
                 b["mode"] = st.selectbox(
                     f"Bonus Mode #{i+1}",
                     options=["absolute", "pct"],
-                    format_func=lambda x: "₹ Fixed" if x == "absolute" else "% CTC",
+                    format_func=lambda x: "₹ Bonus" if x == "absolute" else "% Bonus",
                     index=0 if cur_mode == "absolute" else 1,
                     key=f"bonus_mode_select_{i}",
                     label_visibility="collapsed"
