@@ -1,0 +1,45 @@
+name: Keep Streamlit App Awake
+
+on:
+  schedule:
+    # Runs at 06:00 UTC every 2 days (well within Streamlit's 7-day inactivity window)
+    - cron: '0 6 */2 * *'
+  workflow_dispatch:
+    inputs:
+      custom_url:
+        description: 'Optional: Specific Streamlit URL to ping'
+        required: false
+        default: ''
+
+jobs:
+  ping-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Streamlit Application
+        run: |
+          # Priority: Manual input -> GitHub Secret APP_URL -> Default URL
+          TARGET_URL="${{ github.event.inputs.custom_url }}"
+          if [ -z "$TARGET_URL" ]; then
+            TARGET_URL="${{ secrets.APP_URL }}"
+          fi
+          if [ -z "$TARGET_URL" ]; then
+            TARGET_URL="https://salary-calculator-by-drishtant.streamlit.app"
+          fi
+
+          echo "=========================================="
+          echo "Target Streamlit URL: $TARGET_URL"
+          echo "Timestamp: $(date -u)"
+          echo "=========================================="
+
+          # Ping the app with redirect following and a modern user-agent
+          HTTP_RESPONSE=$(curl -s -L -o /dev/null -w "%{http_code}" \
+            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+            "$TARGET_URL" || true)
+
+          echo "Response HTTP Status: $HTTP_RESPONSE"
+
+          if [ "$HTTP_RESPONSE" -ge 200 ] && [ "$HTTP_RESPONSE" -lt 400 ]; then
+            echo "✔ App is awake and responded successfully!"
+          else
+            echo "ℹ Note: Received status $HTTP_RESPONSE. If sleeping, the request triggers container wakeup."
+          fi
