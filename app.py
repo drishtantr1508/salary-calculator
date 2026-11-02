@@ -11,6 +11,7 @@ Features:
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -38,15 +39,107 @@ def parse_bold_val(v) -> float:
 
 st.set_page_config(
     page_title="Salary & TDS Simulator | Indian New Tax Regime",
-    page_icon="▪",
+    page_icon="₹",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Minimalist Monochrome Styling (Clean White Background, High-Contrast Black & Sharp Borders)
+# Adaptive Light & Dark Monochrome Styling with Tactile Feedback
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+    :root {
+        --bg-main: #ffffff;
+        --bg-card: #ffffff;
+        --bg-card-subtle: #f9fafb;
+        --border-subtle: #e5e7eb;
+        --border-strong: #111827;
+        --text-main: #111827;
+        --text-muted: #6b7280;
+        --text-subtle: #4b5563;
+        --btn-primary-bg: #111827;
+        --btn-primary-text: #ffffff;
+        --btn-primary-border: #111827;
+        --btn-secondary-bg: #ffffff;
+        --btn-secondary-text: #111827;
+        --btn-secondary-border: #d1d5db;
+        --tab-inactive: #4b5563;
+        --tab-active: #111827;
+        --tab-border: #e5e7eb;
+        --tab-active-border: #111827;
+        --expander-border: #111827;
+        --expander-bg: #ffffff;
+        --expander-header-bg: #111827;
+        --expander-header-text: #ffffff;
+        --grid-border: #111827;
+        --grid-header-bg: #f9fafb;
+        --grid-header-text: #000000;
+        --grid-text: #000000;
+        --card-accent-border: #111827;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg-main: #0e1117;
+            --bg-card: #181922;
+            --bg-card-subtle: #1c202a;
+            --border-subtle: #2e3442;
+            --border-strong: #475266;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-subtle: #cbd5e1;
+            --btn-primary-bg: #f8fafc;
+            --btn-primary-text: #0f172a;
+            --btn-primary-border: #f8fafc;
+            --btn-secondary-bg: #1e222d;
+            --btn-secondary-text: #f8fafc;
+            --btn-secondary-border: #3b4252;
+            --tab-inactive: #94a3b8;
+            --tab-active: #ffffff;
+            --tab-border: #2e3442;
+            --tab-active-border: #ffffff;
+            --expander-border: #3b4252;
+            --expander-bg: #161820;
+            --expander-header-bg: #222634;
+            --expander-header-text: #ffffff;
+            --grid-border: #333a48;
+            --grid-header-bg: #1b1e27;
+            --grid-header-text: #ffffff;
+            --grid-text: #f8fafc;
+            --card-accent-border: #3b82f6;
+        }
+    }
+
+    [data-theme="dark"], [data-base-theme="dark"], .stApp[data-theme="dark"] {
+        --bg-main: #0e1117;
+        --bg-card: #181922;
+        --bg-card-subtle: #1c202a;
+        --border-subtle: #2e3442;
+        --border-strong: #475266;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --text-subtle: #cbd5e1;
+        --btn-primary-bg: #f8fafc;
+        --btn-primary-text: #0f172a;
+        --btn-primary-border: #f8fafc;
+        --btn-secondary-bg: #1e222d;
+        --btn-secondary-text: #f8fafc;
+        --btn-secondary-border: #3b4252;
+        --tab-inactive: #94a3b8;
+        --tab-active: #ffffff;
+        --tab-border: #2e3442;
+        --tab-active-border: #ffffff;
+        --expander-border: #3b4252;
+        --expander-bg: #161820;
+        --expander-header-bg: #222634;
+        --expander-header-text: #ffffff;
+        --grid-border: #333a48;
+        --grid-header-bg: #1b1e27;
+        --grid-header-text: #ffffff;
+        --grid-text: #f8fafc;
+        --card-accent-border: #3b82f6;
+    }
 
     html, body, [class*="css"] {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -62,9 +155,33 @@ st.markdown("""
         max-width: 1400px;
     }
 
+    /* Tactile Click & Tap Feedback Animation for all Interactive Elements */
+    button, 
+    div.stButton > button, 
+    [data-testid^="baseButton"], 
+    [data-baseweb="tab"], 
+    details summary, 
+    div[data-testid="stDownloadButton"] > button {
+        transition: transform 0.08s cubic-bezier(0.2, 0, 0, 1), 
+                    box-shadow 0.08s ease, 
+                    filter 0.08s ease !important;
+        -webkit-tap-highlight-color: transparent !important;
+        user-select: none !important;
+    }
+
+    button:active, 
+    div.stButton > button:active, 
+    [data-testid^="baseButton"]:active, 
+    [data-baseweb="tab"]:active, 
+    details summary:active, 
+    div[data-testid="stDownloadButton"] > button:active {
+        transform: scale(0.96) !important;
+        filter: brightness(0.92) contrast(1.05) !important;
+    }
+
     /* Minimal Header */
     .app-header {
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid var(--border-subtle);
         padding-bottom: 0.6rem;
         margin-bottom: 1rem;
     }
@@ -72,63 +189,74 @@ st.markdown("""
         font-size: 1.4rem;
         font-weight: 700;
         letter-spacing: -0.02em;
-        color: #111827;
+        color: var(--text-main);
         margin: 0;
     }
     .app-sub {
         font-size: 0.8rem;
-        color: #6b7280;
+        color: var(--text-muted);
         margin-top: 2px;
     }
 
     /* Clean Minimalist KPI Card */
     .bw-kpi-card {
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
+        background-color: var(--bg-card) !important;
+        border: 1px solid var(--border-subtle) !important;
+        border-radius: 6px;
         padding: 12px 14px;
         margin-bottom: 0.8rem;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     .bw-kpi-label {
         font-size: 0.7rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #4b5563;
+        color: var(--text-muted) !important;
     }
     .bw-kpi-val {
         font-family: 'JetBrains Mono', monospace;
         font-size: 1.4rem;
         font-weight: 700;
-        color: #111827;
+        color: var(--text-main) !important;
         margin-top: 2px;
         letter-spacing: -0.02em;
     }
 
     /* Compact Real CTC Reality Check Box */
     .real-ctc-card {
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-left: 3px solid #111827;
-        padding: 10px 12px;
-        border-radius: 3px;
-        font-size: 0.77rem;
-        color: #374151;
-        line-height: 1.5;
-        margin-top: 10px;
-        margin-bottom: 10px;
+        background: var(--bg-card-subtle) !important;
+        border: 1px solid var(--border-subtle) !important;
+        border-left: 3px solid var(--card-accent-border) !important;
+        padding: 12px 14px;
+        border-radius: 4px;
+        font-size: 0.78rem;
+        color: var(--text-subtle) !important;
+        line-height: 1.55;
+        margin-top: 12px;
+        margin-bottom: 12px;
+    }
+    .real-ctc-title {
+        font-weight: 700;
+        color: var(--text-main) !important;
+        margin-bottom: 4px;
+        letter-spacing: 0.02em;
+    }
+    .real-ctc-formula {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.74rem;
+        color: var(--text-main) !important;
     }
 
     /* Zero Tax Banner */
     .zero-tax-banner {
-        border: 1px solid #111827;
-        background: #f9fafb;
+        border: 1px solid var(--border-strong) !important;
+        background: var(--bg-card-subtle) !important;
         padding: 10px 14px;
-        border-radius: 3px;
+        border-radius: 4px;
         margin-bottom: 1rem;
         font-size: 0.82rem;
-        color: #111827;
+        color: var(--text-main) !important;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -137,96 +265,245 @@ st.markdown("""
     /* High-contrast Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        border-bottom: 2px solid #e5e7eb;
-        background-color: transparent;
+        border-bottom: 2px solid var(--tab-border) !important;
+        background-color: transparent !important;
     }
     .stTabs [data-baseweb="tab"] {
-        background-color: transparent;
-        border: none;
-        border-bottom: 2px solid transparent;
-        color: #4b5563 !important;
-        font-weight: 500;
-        font-size: 0.85rem;
-        padding: 8px 16px;
+        background-color: transparent !important;
+        border: none !important;
+        border-bottom: 2px solid transparent !important;
+        color: var(--tab-inactive) !important;
+        font-weight: 500 !important;
+        font-size: 0.85rem !important;
+        padding: 8px 16px !important;
     }
     .stTabs [aria-selected="true"] {
-        color: #000000 !important;
-        border-bottom: 2px solid #000000 !important;
+        color: var(--tab-active) !important;
+        border-bottom: 2px solid var(--tab-active-border) !important;
         background-color: transparent !important;
         font-weight: 700 !important;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        color: #000000 !important;
+        color: var(--tab-active) !important;
     }
 
-    /* Table & Editor Styling: Solid black high-contrast presence */
+    /* Table & Editor Styling: High-contrast theme adaptation */
     div[data-testid="stDataEditor"] {
-        border: 1px solid #111827 !important;
-        border-radius: 4px !important;
+        border: 1px solid var(--grid-border) !important;
+        border-radius: 6px !important;
         font-size: 0.95rem !important;
-        --gdg-text-dark: #000000 !important;
-        --gdg-text-medium: #000000 !important;
-        --gdg-text-light: #111827 !important;
-        --gdg-text-header: #000000 !important;
-        --gdg-text-group-header: #000000 !important;
-        --gdg-bg-header: #f9fafb !important;
+        --gdg-text-dark: var(--grid-text) !important;
+        --gdg-text-medium: var(--grid-text) !important;
+        --gdg-text-light: var(--text-muted) !important;
+        --gdg-text-header: var(--grid-header-text) !important;
+        --gdg-text-group-header: var(--grid-header-text) !important;
+        --gdg-bg-header: var(--grid-header-bg) !important;
+        --gdg-bg-cell: var(--bg-card) !important;
+        --gdg-bg-cell-medium: var(--bg-card-subtle) !important;
         --gdg-header-font-style: 700 13px Inter, sans-serif !important;
     }
 
-    /* High-Visibility Solid Filled Primary Buttons */
+    /* High-Visibility Filled Primary Buttons */
     button[kind="primary"], div.stButton > button[kind="primary"], button[data-testid="baseButton-primary"] {
-        background-color: #111827 !important;
-        color: #ffffff !important;
-        border: 1.5px solid #111827 !important;
+        background-color: var(--btn-primary-bg) !important;
+        color: var(--btn-primary-text) !important;
+        border: 1.5px solid var(--btn-primary-border) !important;
         font-weight: 600 !important;
         border-radius: 5px !important;
         padding: 0.55rem 1rem !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.14) !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
         letter-spacing: -0.01em !important;
-        transition: all 0.15s ease !important;
     }
     button[kind="primary"]:hover, div.stButton > button[kind="primary"]:hover, button[data-testid="baseButton-primary"]:hover {
-        background-color: #000000 !important;
-        color: #ffffff !important;
-        border-color: #000000 !important;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.24) !important;
-        transform: translateY(-1px);
+        filter: brightness(1.08) !important;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.25) !important;
     }
-    button[kind="primary"] p, div.stButton > button[kind="primary"] p, button[data-testid="baseButton-primary"] p {
-        color: #ffffff !important;
+    button[kind="primary"] p, div.stButton > button[kind="primary"] p, button[data-testid="baseButton-primary"] p,
+    button[kind="primary"] span, div.stButton > button[kind="primary"] span, button[data-testid="baseButton-primary"] span {
+        color: var(--btn-primary-text) !important;
         font-weight: 600 !important;
     }
 
-    /* Solid Filled Style for Advanced Tax & TDS Settings */
-    div[data-testid="stExpander"] {
-        border: 1.5px solid #111827 !important;
+    /* Clean Crisp Secondary Buttons */
+    button[kind="secondary"], 
+    div.stButton > button:not([kind="primary"]), 
+    button[data-testid="baseButton-secondary"],
+    div[data-testid="stDownloadButton"] > button {
+        background-color: var(--btn-secondary-bg) !important;
+        color: var(--btn-secondary-text) !important;
+        border: 1px solid var(--btn-secondary-border) !important;
+        font-weight: 500 !important;
         border-radius: 5px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    }
+    button[kind="secondary"]:hover, 
+    div.stButton > button:not([kind="primary"]):hover, 
+    button[data-testid="baseButton-secondary"]:hover,
+    div[data-testid="stDownloadButton"] > button:hover {
+        border-color: var(--border-strong) !important;
+    }
+    button[kind="secondary"] p, 
+    div.stButton > button:not([kind="primary"]) p, 
+    button[data-testid="baseButton-secondary"] p,
+    div[data-testid="stDownloadButton"] > button p {
+        color: var(--btn-secondary-text) !important;
+    }
+
+    /* Delete / Remove Hike & Bonus Buttons */
+    button[aria-label="Remove hike"], button[aria-label="Remove bonus"] {
+        padding: 0 4px !important;
+        font-size: 1.15rem !important;
+        line-height: 1 !important;
+        min-height: 38px !important;
+        color: var(--text-muted) !important;
+        border-color: var(--btn-secondary-border) !important;
+    }
+    button[aria-label="Remove hike"]:hover, button[aria-label="Remove bonus"]:hover {
+        color: #ef4444 !important;
+        border-color: #ef4444 !important;
+    }
+
+    /* Theme-Adaptive Filled Style for Advanced Tax & TDS Settings */
+    div[data-testid="stExpander"] {
+        border: 1.5px solid var(--expander-border) !important;
+        border-radius: 6px !important;
         overflow: hidden !important;
         margin-top: 14px !important;
-        background: #ffffff !important;
+        background: var(--expander-bg) !important;
     }
     div[data-testid="stExpander"] details summary {
-        background-color: #111827 !important;
-        color: #ffffff !important;
+        background-color: var(--expander-header-bg) !important;
+        color: var(--expander-header-text) !important;
         font-weight: 600 !important;
         padding: 10px 14px !important;
         border-radius: 0px !important;
-        transition: background-color 0.15s ease !important;
-    }
-    div[data-testid="stExpander"] details summary:hover {
-        background-color: #000000 !important;
     }
     div[data-testid="stExpander"] details summary svg {
-        fill: #ffffff !important;
-        color: #ffffff !important;
+        fill: var(--expander-header-text) !important;
+        color: var(--expander-header-text) !important;
     }
     div[data-testid="stExpander"] details summary p,
     div[data-testid="stExpander"] details summary span {
-        color: #ffffff !important;
+        color: var(--expander-header-text) !important;
         font-weight: 600 !important;
     }
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        background-color: var(--expander-bg) !important;
+        color: var(--text-main) !important;
+        padding: 12px 14px !important;
+    }
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] label,
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] span {
+        color: var(--text-main) !important;
+    }
+
+    /* High-contrast form elements in dark mode (Android & iOS browsers) */
+    @media (prefers-color-scheme: dark), [data-theme="dark"], [data-base-theme="dark"] {
+        [data-baseweb="input"] > div {
+            background-color: #1e212b !important;
+            border-color: #3b4252 !important;
+        }
+        [data-baseweb="input"] input {
+            color: #f8fafc !important;
+            -webkit-text-fill-color: #f8fafc !important;
+        }
+        [data-baseweb="select"] > div {
+            background-color: #1e212b !important;
+            border-color: #3b4252 !important;
+            color: #f8fafc !important;
+        }
+        [data-baseweb="select"] span {
+            color: #f8fafc !important;
+        }
+        [data-baseweb="popover"] {
+            background-color: #1e212b !important;
+            border: 1px solid #3b4252 !important;
+        }
+        [data-baseweb="menu"] {
+            background-color: #1e212b !important;
+        }
+        [data-baseweb="menu"] li {
+            color: #f8fafc !important;
+        }
+        [data-testid="stWidgetLabel"] p {
+            color: #cbd5e1 !important;
+            font-weight: 500 !important;
+        }
+        [data-testid="stCaptionContainer"] p {
+            color: #94a3b8 !important;
+        }
+        div[data-testid="stRadio"] label span {
+            color: #f8fafc !important;
+        }
+    }
+
+    /* Responsive Mobile Layout Adjustments */
+    @media (max-width: 768px) {
+        .block-container {
+            padding-top: 0.8rem;
+            padding-left: 0.8rem;
+            padding-right: 0.8rem;
+        }
+        .app-title {
+            font-size: 1.15rem;
+        }
+        .bw-kpi-val {
+            font-size: 1.2rem;
+        }
+    }
 </style>
+<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" style="display:none;" onload="(function(){try{var w=window.parent||window;if(w.__taxHapticMDReady)return;w.__taxHapticMDReady=true;var h=function(){try{if(w.navigator&&w.navigator.vibrate)w.navigator.vibrate(12);}catch(e){}};var s='button, [data-baseweb=\\'tab\\'], [role=\\'button\\'], summary, [data-testid^=\\'baseButton\\']';w.document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});w.document.addEventListener('click',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});}catch(e){}})()"/>
 """, unsafe_allow_html=True)
+
+# Haptic feedback script runner across iframes
+components.html(
+    """
+    <script>
+    (function() {
+        function setupHaptic() {
+            try {
+                const targets = [window, window.parent, window.top];
+                targets.forEach(function(w) {
+                    if (!w) return;
+                    try {
+                        if (w.__taxHapticReady) return;
+                        w.__taxHapticReady = true;
+
+                        const triggerFeedback = function() {
+                            try {
+                                if (w.navigator && w.navigator.vibrate) {
+                                    w.navigator.vibrate(12);
+                                }
+                            } catch(e) {}
+                        };
+
+                        const selector = 'button, [data-baseweb="tab"], [role="button"], summary, [data-testid^="baseButton"], [data-testid="stExpander"] details summary';
+
+                        w.document.addEventListener('pointerdown', function(e) {
+                            if (e.target && e.target.closest(selector)) {
+                                triggerFeedback();
+                            }
+                        }, { passive: true, capture: true });
+
+                        w.document.addEventListener('click', function(e) {
+                            if (e.target && e.target.closest(selector)) {
+                                triggerFeedback();
+                            }
+                        }, { passive: true, capture: true });
+                    } catch(err) {}
+                });
+            } catch(e) {}
+        }
+        setupHaptic();
+        setTimeout(setupHaptic, 300);
+        setTimeout(setupHaptic, 1000);
+    })();
+    </script>
+    """,
+    height=0,
+    width=0
+)
 
 
 # Helper: Generate monthly input table from base parameters, hikes, and bonuses
@@ -393,7 +670,7 @@ with col_left:
     with col_h_head:
         st.markdown("**Appraisals / Hikes**")
     with col_h_add:
-        if st.button("➕ Add Hike", key="add_hike_btn", use_container_width=True):
+        if st.button("+ Add Hike", key="add_hike_btn", use_container_width=True):
             st.session_state.hikes_list.append({
                 "mode": "pct",
                 "pct_val": 10.0,
@@ -456,7 +733,7 @@ with col_left:
                     label_visibility="collapsed"
                 )
             with c4:
-                if st.button("✖", key=f"del_hike_{i}", help="Remove hike"):
+                if st.button("×", key=f"del_hike_{i}", help="Remove hike"):
                     hikes_to_remove.append(i)
 
         if hikes_to_remove:
@@ -471,7 +748,7 @@ with col_left:
     with col_b_head:
         st.markdown("**Bonuses / Variables**")
     with col_b_add:
-        if st.button("➕ Add Bonus", key="add_bonus_btn", use_container_width=True):
+        if st.button("+ Add Bonus", key="add_bonus_btn", use_container_width=True):
             st.session_state.bonuses_list.append({
                 "mode": "absolute",
                 "abs_val": 100000.0,
@@ -534,7 +811,7 @@ with col_left:
                     label_visibility="collapsed"
                 )
             with c4:
-                if st.button("✖", key=f"del_bonus_{i}", help="Remove bonus"):
+                if st.button("×", key=f"del_bonus_{i}", help="Remove bonus"):
                     bonuses_to_remove.append(i)
 
         if bonuses_to_remove:
@@ -558,12 +835,12 @@ with col_left:
         )
         st.rerun()
 
-    # Reality Check Callout
+    # Reality Check Callout (Fully Theme-Adaptive)
     st.markdown("""
     <div class="real-ctc-card">
-        <div style="font-weight: 700; color: #111827; margin-bottom: 4px;">💡 REALITY OF YOUR CTC</div>
+        <div class="real-ctc-title">REALITY OF YOUR CTC</div>
         Advertised compensation packages often include inflated multi-year figures:<br>
-        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: #111827;">
+        <span class="real-ctc-formula">
             e.g. ₹13L Base + ₹2L Bonus + ₹5L ESOPs over 4 yrs = "20 LPA CTC"
         </span><br>
         • <b>Real Salary CTC is only ₹13 LPA</b>: Only this draws monthly salary.<br>
@@ -575,7 +852,7 @@ with col_left:
     """, unsafe_allow_html=True)
 
     # Advanced Tax Settings
-    with st.expander("⚙️ Advanced Tax & TDS Settings", expanded=False):
+    with st.expander("Advanced Tax & TDS Settings", expanded=False):
         std_deduction = st.number_input(
             "Standard Deduction (₹)",
             min_value=0.0,
@@ -642,26 +919,26 @@ sim_result = simulator.simulate()
 
 
 # Modal Dialog for Zero Tax
-@st.dialog("🎉 HURRAY & CONGRATULATIONS!")
+@st.dialog("TAX SUMMARY - ZERO TAX")
 def render_zero_tax_popup(taxable_inc: float, gross_inc: float, std_ded: float):
     st.markdown(f"""
     <div style="font-family: 'Inter', sans-serif;">
-        <h3 style="color: #111827; margin-top: 0; font-size: 1.25rem;">🏆 ZERO INCOME TAX PAYABLE!</h3>
-        <p style="color: #4b5563; font-size: 0.88rem; line-height: 1.5;">
+        <h3 style="margin-top: 0; font-size: 1.25rem;">ZERO INCOME TAX PAYABLE</h3>
+        <p style="font-size: 0.88rem; line-height: 1.5; opacity: 0.85;">
             Under the <b>New Tax Regime (Section 115BAC / Budget 2024)</b>, taxable income up to <b>₹12,00,000</b> receives a <b>100% Tax Rebate under Section 87A</b>.
         </p>
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 4px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #111827;">
+        <div style="background: var(--bg-card-subtle, #f9fafb); border: 1px solid var(--border-subtle, #e5e7eb); padding: 12px 16px; border-radius: 4px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
             <div>• Annual Gross Salary: <b>₹{gross_inc:,.0f}</b></div>
             <div>• Standard Deduction: <b>₹{std_ded:,.0f}</b></div>
             <div>• Net Taxable Income: <b>₹{taxable_inc:,.0f}</b> (≤ ₹12,00,000)</div>
-            <div style="color: #111827; font-weight: 700; margin-top: 6px; font-size: 0.95rem;">• Total Annual TDS: ₹0.00</div>
+            <div style="font-weight: 700; margin-top: 6px; font-size: 0.95rem;">• Total Annual TDS: ₹0.00</div>
         </div>
-        <p style="color: #6b7280; font-size: 0.8rem;">
+        <p style="font-size: 0.8rem; opacity: 0.75;">
             Every single rupee of your gross salary is credited directly to your bank account (less statutory PF & PT).
         </p>
     </div>
     """, unsafe_allow_html=True)
-    if st.button("Proceed to View My Payslip Schedule →", use_container_width=True):
+    if st.button("Proceed to View My Payslip Schedule →", use_container_width=True, type="primary"):
         st.session_state.zero_tax_dialog_shown = True
         st.rerun()
 
@@ -680,7 +957,7 @@ with col_right:
             )
         st.markdown("""
         <div class="zero-tax-banner">
-            <span>🎉 <b>HURRAY! YOUR ANNUAL INCOME TAX IS ₹0</b> — 100% Section 87A Rebate on taxable income up to ₹12 Lakhs (Gross up to ₹12.75L).</span>
+            <span><b>ZERO ANNUAL INCOME TAX</b> — 100% Section 87A Rebate on taxable income up to ₹12 Lakhs (Gross up to ₹12.75L).</span>
             <span style="font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700;">TDS: ₹0</span>
         </div>
         """, unsafe_allow_html=True)
@@ -729,7 +1006,7 @@ with col_right:
     with col_t_actions:
         col_btn_recalc, col_btn_csv = st.columns([1.5, 1])
         with col_btn_recalc:
-            recalc_clicked = st.button("🔄 Recalculate", use_container_width=True)
+            recalc_clicked = st.button("Recalculate", use_container_width=True)
         with col_btn_csv:
             csv_data = simulation_to_dataframe(sim_result).to_csv(index=False).encode('utf-8')
             st.download_button("CSV", data=csv_data, file_name="monthly_payslips.csv", mime="text/csv", use_container_width=True)
@@ -836,15 +1113,15 @@ with col_right:
 
 
 # ==================== LOWER SECTION: TABS FOR DEEP-DIVE ====================
-st.markdown("<hr style='border: none; border-bottom: 1px solid #e5e7eb; margin: 1.5rem 0;'>", unsafe_allow_html=True)
+st.markdown("<hr style='border: none; border-bottom: 1px solid var(--border-subtle); margin: 1.5rem 0;'>", unsafe_allow_html=True)
 
 t1, t2, t3 = st.tabs([
-    "📈 MINIMALIST TRAJECTORY CHART",
-    "📑 SINGLE MONTH PAYSLIP INSPECTOR",
-    "⚖️ SECTION 192 VS NAIVE /12 COMPARISON"
+    "TRAJECTORY CHART",
+    "MONTHLY PAYSLIP INSPECTOR",
+    "SECTION 192 VS NAIVE /12 COMPARISON"
 ])
 
-# --- TAB 1: MINIMALIST CHART (STRICTLY LIGHT BACKGROUND) ---
+# --- TAB 1: TRAJECTORY CHART (THEME-ADAPTIVE) ---
 with t1:
     st.markdown("##### Minimal Cashflow Trajectory (Monthly)")
 
@@ -855,54 +1132,54 @@ with t1:
 
     fig_min = go.Figure()
 
-    # Net In-Hand (Crisp Pure Black Line with markers)
+    # Net In-Hand (Vibrant Royal Blue Line that is crystal clear in both Dark and Light modes)
     fig_min.add_trace(go.Scatter(
         x=months,
         y=net_vals,
         name="Net In-Hand",
         mode="lines+markers",
-        line=dict(color="#000000", width=2.5),
-        marker=dict(size=6, color="#000000")
+        line=dict(color="#2563eb", width=2.5),
+        marker=dict(size=6, color="#2563eb")
     ))
 
-    # Gross Salary (Neutral Dark Slate Dashed Line)
+    # Gross Salary (Crisp Slate/Teal Dashed Line)
     fig_min.add_trace(go.Scatter(
         x=months,
         y=gross_vals,
         name="Gross Salary",
         mode="lines",
-        line=dict(color="#4b5563", width=1.5, dash="dash")
+        line=dict(color="#059669", width=1.5, dash="dash")
     ))
 
-    # Monthly TDS (Subtle Muted Gray Dotted Line)
+    # Monthly TDS (Amber Dotted Line)
     fig_min.add_trace(go.Scatter(
         x=months,
         y=tds_vals,
         name="Monthly TDS",
         mode="lines",
-        line=dict(color="#9ca3af", width=1.5, dash="dot")
+        line=dict(color="#d97706", width=1.5, dash="dot")
     ))
 
-    # Light background layout
+    # Clean Theme-Adaptive Transparent Layout
     fig_min.update_layout(
-        paper_bgcolor="#ffffff",
-        plot_bgcolor="#ffffff",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
         xaxis=dict(
             showgrid=True,
-            gridcolor="#f3f4f6",
+            gridcolor="rgba(128, 128, 128, 0.15)",
             gridwidth=1,
-            color="#374151",
-            tickfont=dict(size=11, color="#374151")
+            color="#888888",
+            tickfont=dict(size=11, color="#888888")
         ),
         yaxis=dict(
             showgrid=True,
-            gridcolor="#f3f4f6",
+            gridcolor="rgba(128, 128, 128, 0.15)",
             gridwidth=1,
-            color="#374151",
-            tickfont=dict(size=11, color="#374151")
+            color="#888888",
+            tickfont=dict(size=11, color="#888888")
         ),
         legend=dict(
-            font=dict(color="#111827", size=11),
+            font=dict(color="#888888", size=11),
             orientation="h",
             yanchor="bottom",
             y=1.02,
@@ -926,7 +1203,7 @@ with t2:
     col_pi1, col_pi2 = st.columns([1.5, 1.2], gap="large")
 
     with col_pi1:
-        st.markdown(f"#### 📄 PAYSLIP: {SHORT_MONTHS[selected_p.month_index - 1].upper()}")
+        st.markdown(f"#### PAYSLIP: {SHORT_MONTHS[selected_p.month_index - 1].upper()}")
         st.caption(f"Active CTC: ₹{selected_p.annual_ctc_active:,.0f} ({selected_p.annual_ctc_active/100000:.2f} LPA) • Status: {'Bonus Disbursed' if selected_p.bonus > 0 else 'Regular'}")
 
         c_earn, c_ded = st.columns(2)
@@ -953,7 +1230,7 @@ with t2:
         )
 
     with col_pi2:
-        st.markdown("#### ⚖️ TDS STATUS")
+        st.markdown("#### TDS STATUS")
         st.write(f"• **Months Remaining in FY:** {selected_p.months_remaining}")
         st.write(f"• **Projected Annual Gross:** ₹{selected_p.projected_annual_gross:,.0f}")
         st.write(f"• **Projected Annual Tax:** ₹{selected_p.projected_annual_tax:,.0f}")
