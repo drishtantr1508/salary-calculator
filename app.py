@@ -563,8 +563,12 @@ st.markdown("""
     #manage-app-button,
     [data-testid="stEmbedFooter"],
     div[class*="stEmbedFooter"],
+    div[class*="embeddedAppMetaInfoBar"],
+    div[class*="EmbeddedAppMetaInfoBar"],
     div[class*="embeddedFooter"],
     div[class*="embedFooter"],
+    div[class*="metaInfoBar"],
+    div[class*="MetaInfoBar"],
     div[class*="bottomBar"],
     [data-testid="stBottom"],
     div[class*="stBottom"],
@@ -582,6 +586,7 @@ st.markdown("""
     a[href*="streamlit.io/?utm_source=embed"],
     div:has(> a[href*="streamlit.io"]),
     div:has(> button[title="Fullscreen"]),
+    button[title="Fullscreen"],
     [data-testid="stToolbarActions"] {
         display: none !important;
         visibility: hidden !important;
@@ -621,7 +626,7 @@ st.markdown("""
         }
     }
 </style>
-<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" style="display:none;" onload="(function(){try{var w=window.parent||window;if(w.__taxHapticMDReady)return;w.__taxHapticMDReady=true;var purgeBadges=function(){try{var sels=['#manage-app-button','[data-testid=\'manage-app-button\']','[class*=\'viewerBadge\']','[class*=\'ViewerBadge\']','[class*=\'ProfileBadge\']','[class*=\'floatingBadge\']','[class*=\'HostBadge\']','[class*=\'stDeployButton\']','footer','a[href*=\'streamlit.io/cloud\']','a[href*=\'share.streamlit.io\']'];sels.forEach(function(s){var els=w.document.querySelectorAll(s);els.forEach(function(el){try{el.remove();}catch(e){el.style.display='none';}});});}catch(e){}};purgeBadges();var h=function(){try{var b=w.AndroidHapticsBridge||(window.parent&&window.parent.AndroidHapticsBridge)||(window.top&&window.top.AndroidHapticsBridge);if(b&&b.click){b.click();return;}if(window.parent&&window.parent!==window){window.parent.postMessage({type:'HAPTIC_TRIGGER',effect:'click'},'*');}if(w.navigator&&w.navigator.vibrate){w.navigator.vibrate(10);}}catch(e){}};var s='button, [data-baseweb=\'tab\'], [role=\'button\'], summary, [data-testid^=\'baseButton\'], [data-baseweb=\'select\']';w.document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});w.document.addEventListener('click',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});}catch(e){}})()"/>
+<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" style="display:none;" onload="(function(){try{var w=window.parent||window;if(w.__taxHapticMDReady)return;w.__taxHapticMDReady=true;var purgeBadges=function(){try{var sels=['#manage-app-button','[data-testid=\'manage-app-button\']','[class*=\'viewerBadge\']','[class*=\'ViewerBadge\']','[class*=\'embeddedAppMetaInfoBar\']','[data-testid=\'stEmbedFooter\']','footer','a[href*=\'streamlit.io/cloud\']','a[href*=\'share.streamlit.io\']'];sels.forEach(function(s){var els=w.document.querySelectorAll(s);els.forEach(function(el){try{el.remove();}catch(e){el.style.display='none';}});});}catch(e){}};purgeBadges();var h=function(){try{var b=w.AndroidHapticsBridge||(window.parent&&window.parent.AndroidHapticsBridge)||(window.top&&window.top.AndroidHapticsBridge);if(b&&b.click){b.click();return;}if(window.parent&&window.parent!==window){window.parent.postMessage({type:'HAPTIC_TRIGGER',effect:'click'},'*');}if(w.navigator&&w.navigator.vibrate){w.navigator.vibrate(10);}}catch(e){}};var s='button, [data-baseweb=\'tab\'], [role=\'button\'], summary, [data-testid^=\'baseButton\'], [data-baseweb=\'select\']';w.document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});w.document.addEventListener('click',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});}catch(e){}})()"/>
 """, unsafe_allow_html=True)
 
 # Haptic feedback & Badge remover script runner across iframes
@@ -642,6 +647,10 @@ components.html(
                                     '[data-testid="manage-app-button"]',
                                     '[data-testid="stEmbedFooter"]',
                                     'div[class*="stEmbedFooter"]',
+                                    'div[class*="embeddedAppMetaInfoBar"]',
+                                    'div[class*="EmbeddedAppMetaInfoBar"]',
+                                    'div[class*="metaInfoBar"]',
+                                    'div[class*="MetaInfoBar"]',
                                     'div[class*="embeddedFooter"]',
                                     'div[class*="embedFooter"]',
                                     'div[class*="bottomBar"]',
@@ -656,7 +665,8 @@ components.html(
                                     'footer',
                                     'a[href*="streamlit.io/cloud"]',
                                     'a[href*="share.streamlit.io"]',
-                                    'a[href*="streamlit.io/?utm_source=embed"]'
+                                    'a[href*="streamlit.io/?utm_source=embed"]',
+                                    'button[title="Fullscreen"]'
                                 ];
                                 badgeSelectors.forEach(function(s) {
                                     const nodes = w.document.querySelectorAll(s);
@@ -670,16 +680,17 @@ components.html(
                                     });
                                 });
 
-                                const fixedNodes = w.document.querySelectorAll('div, a, button');
-                                fixedNodes.forEach(function(node) {
-                                    if (node && node.className && typeof node.className === 'string') {
-                                        const lower = node.className.toLowerCase();
-                                        if (lower.includes('viewerbadge') || lower.includes('manageapp')) {
-                                            try {
-                                                node.remove();
-                                            } catch(e) {
-                                                node.style.display = 'none';
-                                            }
+                                const allElements = w.document.querySelectorAll('div, footer, a, span, button');
+                                allElements.forEach(function(el) {
+                                    const txt = el.textContent || '';
+                                    if (txt.includes('Built with Streamlit') || (txt.includes('Fullscreen') && el.tagName === 'BUTTON')) {
+                                        const bar = el.closest('div[class*="embedded"], div[class*="bottom"], div[style*="fixed"], div[style*="position: fixed"], footer') || el;
+                                        try { bar.remove(); } catch(e) { bar.style.display = 'none'; }
+                                    }
+                                    if (el.className && typeof el.className === 'string') {
+                                        const lower = el.className.toLowerCase();
+                                        if (lower.includes('viewerbadge') || lower.includes('manageapp') || lower.includes('embeddedappmetainfobar')) {
+                                            try { el.remove(); } catch(e) { el.style.display = 'none'; }
                                         }
                                     }
                                 });
