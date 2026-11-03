@@ -2,8 +2,8 @@ name: Keep Streamlit App Awake
 
 on:
   schedule:
-    # Runs at 06:00 UTC every 2 days (well within Streamlit's 7-day inactivity window)
-    - cron: '0 6 */2 * *'
+    # Runs periodically to keep Streamlit container warm
+    - cron: '*/30 * * * *'
   workflow_dispatch:
     inputs:
       custom_url:
@@ -23,7 +23,7 @@ jobs:
             TARGET_URL="${{ secrets.APP_URL }}"
           fi
           if [ -z "$TARGET_URL" ]; then
-            TARGET_URL="https://salary-calculator-by-drishtant.streamlit.app"
+            TARGET_URL="https://salarycalculatorbydrishtant.streamlit.app/?embed=true"
           fi
 
           echo "=========================================="

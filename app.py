@@ -650,173 +650,55 @@ st.markdown("""
         }
     }
 </style>
-<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" style="display:none;" onload="(function(){try{var w=window.parent||window;if(w.__taxHapticMDReady)return;w.__taxHapticMDReady=true;var purgeBadges=function(){try{var sels=['#manage-app-button','[data-testid=\'manage-app-button\']','[class*=\'viewerBadge\']','[class*=\'ViewerBadge\']','[class*=\'embeddedAppMetaInfoBar\']','[data-testid=\'stEmbedFooter\']','footer','a[href*=\'streamlit.io/cloud\']','a[href*=\'share.streamlit.io\']'];sels.forEach(function(s){var els=w.document.querySelectorAll(s);els.forEach(function(el){try{el.remove();}catch(e){el.style.display='none';}});});}catch(e){}};var syncTheme=function(){try{var isDark=(w.matchMedia&&w.matchMedia('(prefers-color-scheme: dark)').matches);var app=w.document.querySelector('.stApp');if(app){var bg=w.getComputedStyle(app).backgroundColor;if(bg&&(bg.includes('14, 17, 23')||bg.includes('14,17,23')||bg==='rgb(0, 0, 0)'||bg==='#0e1117'||bg.includes('18,')||bg.includes('24,'))){isDark=true;}var tc=w.getComputedStyle(app).color;if(tc&&(tc.includes('250')||tc.includes('255')||tc.includes('248'))){isDark=true;}}var titles=w.document.querySelectorAll('.app-title');titles.forEach(function(t){t.style.setProperty('color',isDark?'#f8fafc':'#111827','important');});var subs=w.document.querySelectorAll('.app-sub');subs.forEach(function(s){s.style.setProperty('color',isDark?'#94a3b8':'#6b7280','important');});}catch(e){}};purgeBadges();syncTheme();var h=function(){try{var b=w.AndroidHapticsBridge||(window.parent&&window.parent.AndroidHapticsBridge)||(window.top&&window.top.AndroidHapticsBridge);if(b&&b.click){b.click();return;}if(window.parent&&window.parent!==window){window.parent.postMessage({type:'HAPTIC_TRIGGER',effect:'click'},'*');}if(w.navigator&&w.navigator.vibrate){w.navigator.vibrate(10);}}catch(e){}};var s='button, [data-baseweb=\'tab\'], [role=\'button\'], summary, [data-testid^=\'baseButton\'], [data-baseweb=\'select\']';w.document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});w.document.addEventListener('click',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});}catch(e){}})()"/>
 """, unsafe_allow_html=True)
 
-# Haptic feedback & Badge remover script runner across iframes
+# Lightweight, zero-overhead Haptic feedback bridge (No DOM observers, no style recalculation storms)
 components.html(
     """
     <script>
     (function() {
-        function setupHapticAndCleanBadges() {
-            try {
-                const targets = [window, window.parent, window.top];
-                targets.forEach(function(w) {
-                    if (!w) return;
-                    try {
-                        const purgeBadges = function() {
-                            try {
-                                const badgeSelectors = [
-                                    '#manage-app-button',
-                                    '[data-testid="manage-app-button"]',
-                                    '[data-testid="stEmbedFooter"]',
-                                    'div[class*="stEmbedFooter"]',
-                                    'div[class*="embeddedAppMetaInfoBar"]',
-                                    'div[class*="EmbeddedAppMetaInfoBar"]',
-                                    'div[class*="metaInfoBar"]',
-                                    'div[class*="MetaInfoBar"]',
-                                    'div[class*="embeddedFooter"]',
-                                    'div[class*="embedFooter"]',
-                                    'div[class*="bottomBar"]',
-                                    '[data-testid="stBottom"]',
-                                    'div[class*="stBottom"]',
-                                    '[class*="viewerBadge"]',
-                                    '[class*="ViewerBadge"]',
-                                    '[class*="ProfileBadge"]',
-                                    '[class*="floatingBadge"]',
-                                    '[class*="HostBadge"]',
-                                    '[class*="stDeployButton"]',
-                                    'footer',
-                                    'a[href*="streamlit.io/cloud"]',
-                                    'a[href*="share.streamlit.io"]',
-                                    'a[href*="streamlit.io/?utm_source=embed"]',
-                                    'button[title="Fullscreen"]'
-                                ];
-                                badgeSelectors.forEach(function(s) {
-                                    const nodes = w.document.querySelectorAll(s);
-                                    nodes.forEach(function(node) {
-                                        try {
-                                            node.remove();
-                                        } catch(e) {
-                                            node.style.setProperty('display', 'none', 'important');
-                                            node.style.setProperty('visibility', 'hidden', 'important');
-                                        }
-                                    });
-                                });
+        try {
+            var w = window.parent || window;
+            if (w.__taxHapticBound) return;
+            w.__taxHapticBound = true;
 
-                                const allElements = w.document.querySelectorAll('div, footer, a, span, button');
-                                allElements.forEach(function(el) {
-                                    const txt = el.textContent || '';
-                                    if (txt.includes('Built with Streamlit') || (txt.includes('Fullscreen') && el.tagName === 'BUTTON')) {
-                                        const bar = el.closest('div[class*="embedded"], div[class*="bottom"], div[style*="fixed"], div[style*="position: fixed"], footer') || el;
-                                        try { bar.remove(); } catch(e) { bar.style.display = 'none'; }
-                                    }
-                                    if (el.className && typeof el.className === 'string') {
-                                        const lower = el.className.toLowerCase();
-                                        if (lower.includes('viewerbadge') || lower.includes('manageapp') || lower.includes('embeddedappmetainfobar')) {
-                                            try { el.remove(); } catch(e) { el.style.display = 'none'; }
-                                        }
-                                    }
-                                });
-                            } catch(e) {}
-                        };
-
-                        const makeSelectsReadOnly = function() {
-                            try {
-                                const inputs = w.document.querySelectorAll('[data-baseweb="select"] input');
-                                inputs.forEach(function(inp) {
-                                    inp.setAttribute('readonly', 'readonly');
-                                    inp.setAttribute('inputmode', 'none');
-                                    inp.style.caretColor = 'transparent';
-                                    inp.style.pointerEvents = 'none';
-                                });
-                            } catch(e) {}
-                        };
-
-                        const syncTheme = function() {
-                            try {
-                                const isSystemDark = w.matchMedia && w.matchMedia('(prefers-color-scheme: dark)').matches;
-                                const app = w.document.querySelector('.stApp');
-                                let isDark = isSystemDark;
-                                if (app) {
-                                    const bg = w.getComputedStyle(app).backgroundColor;
-                                    if (bg && (bg.includes('14, 17, 23') || bg.includes('14,17,23') || bg === 'rgb(0, 0, 0)' || bg === '#0e1117')) {
-                                        isDark = true;
-                                    }
-                                }
-                                const titles = w.document.querySelectorAll('.app-title');
-                                titles.forEach(t => t.style.setProperty('color', isDark ? '#f8fafc' : '#111827', 'important'));
-                                const subs = w.document.querySelectorAll('.app-sub');
-                                subs.forEach(s => s.style.setProperty('color', isDark ? '#94a3b8' : '#6b7280', 'important'));
-                            } catch(e) {}
-                        };
-
-                        purgeBadges();
-                        makeSelectsReadOnly();
-                        syncTheme();
-
-                        if (w.__taxHapticReady) return;
-                        w.__taxHapticReady = true;
-
-                        const observer = new MutationObserver(function() {
-                            makeSelectsReadOnly();
-                            purgeBadges();
-                            syncTheme();
-                        });
-                        if (w.document.body) {
-                            observer.observe(w.document.body, { childList: true, subtree: true });
+            var triggerFeedback = function(effect) {
+                effect = effect || 'click';
+                try {
+                    var b = w.AndroidHapticsBridge || (window.parent && window.parent.AndroidHapticsBridge) || (window.top && window.top.AndroidHapticsBridge);
+                    if (b) {
+                        if (typeof b.click === 'function') {
+                            b.click();
+                            return;
                         }
+                        if (typeof b.performHaptic === 'function') {
+                            b.performHaptic(effect);
+                            return;
+                        }
+                    }
 
-                        const triggerFeedback = function(effect) {
-                            effect = effect || 'click';
-                            try {
-                                const b = w.AndroidHapticsBridge || (window.parent && window.parent.AndroidHapticsBridge) || (window.top && window.top.AndroidHapticsBridge);
-                                if (b) {
-                                    if (typeof b.click === 'function') {
-                                        b.click();
-                                        return;
-                                    }
-                                    if (typeof b.performHaptic === 'function') {
-                                        b.performHaptic(effect);
-                                        return;
-                                    }
-                                }
+                    var msg = { type: 'HAPTIC_TRIGGER', effect: effect };
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage(msg, '*');
+                    }
+                    if (window.top && window.top !== window && window.top !== window.parent) {
+                        window.top.postMessage(msg, '*');
+                    }
 
-                                const msg = { type: 'HAPTIC_TRIGGER', effect: effect };
-                                if (window.parent && window.parent !== window) {
-                                    window.parent.postMessage(msg, '*');
-                                }
-                                if (window.top && window.top !== window && window.top !== window.parent) {
-                                    window.top.postMessage(msg, '*');
-                                }
+                    if (w.navigator && w.navigator.vibrate) {
+                        w.navigator.vibrate(10);
+                    }
+                } catch(e) {}
+            };
 
-                                if (w.navigator && w.navigator.vibrate) {
-                                    w.navigator.vibrate(10);
-                                }
-                            } catch(e) {}
-                        };
+            var selector = 'button, [data-baseweb="tab"], [role="button"], summary, [data-testid^="baseButton"], [data-testid="stExpander"] details summary, [data-baseweb="select"]';
 
-                        const selector = 'button, [data-baseweb="tab"], [role="button"], summary, [data-testid^="baseButton"], [data-testid="stExpander"] details summary, [data-baseweb="select"]';
-
-                        w.document.addEventListener('pointerdown', function(e) {
-                            if (e.target && e.target.closest(selector)) {
-                                triggerFeedback('click');
-                            }
-                        }, { passive: true, capture: true });
-
-                        w.document.addEventListener('click', function(e) {
-                            if (e.target && e.target.closest(selector)) {
-                                triggerFeedback('click');
-                            }
-                        }, { passive: true, capture: true });
-                    } catch(err) {}
-                });
-            } catch(e) {}
-        }
-        setupHapticAndCleanBadges();
-        setTimeout(setupHapticAndCleanBadges, 300);
-        setTimeout(setupHapticAndCleanBadges, 1000);
-        setTimeout(setupHapticAndCleanBadges, 2500);
+            w.document.addEventListener('pointerdown', function(e) {
+                if (e.target && e.target.closest(selector)) {
+                    triggerFeedback('click');
+                }
+            }, { passive: true, capture: true });
+        } catch(err) {}
     })();
     </script>
     """,
