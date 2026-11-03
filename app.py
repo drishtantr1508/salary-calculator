@@ -611,7 +611,7 @@ st.markdown("""
         }
     }
 </style>
-<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" style="display:none;" onload="(function(){try{var w=window.parent||window;if(w.__taxHapticMDReady)return;w.__taxHapticMDReady=true;var purgeBadges=function(){try{var sels=['#manage-app-button','[data-testid=\'manage-app-button\']','[class*=\'viewerBadge\']','[class*=\'ViewerBadge\']','[class*=\'ProfileBadge\']','[class*=\'floatingBadge\']','[class*=\'HostBadge\']','[class*=\'stDeployButton\']','footer','a[href*=\'streamlit.io/cloud\']','a[href*=\'share.streamlit.io\']'];sels.forEach(function(s){var els=w.document.querySelectorAll(s);els.forEach(function(el){try{el.remove();}catch(e){el.style.display='none';}});});}catch(e){}};purgeBadges();var h=function(){try{if(w.navigator&&w.navigator.vibrate)w.navigator.vibrate(12);}catch(e){}};var s='button, [data-baseweb=\'tab\'], [role=\'button\'], summary, [data-testid^=\'baseButton\']';w.document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});w.document.addEventListener('click',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});}catch(e){}})()"/>
+<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" style="display:none;" onload="(function(){try{var w=window.parent||window;if(w.__taxHapticMDReady)return;w.__taxHapticMDReady=true;var purgeBadges=function(){try{var sels=['#manage-app-button','[data-testid=\'manage-app-button\']','[class*=\'viewerBadge\']','[class*=\'ViewerBadge\']','[class*=\'ProfileBadge\']','[class*=\'floatingBadge\']','[class*=\'HostBadge\']','[class*=\'stDeployButton\']','footer','a[href*=\'streamlit.io/cloud\']','a[href*=\'share.streamlit.io\']'];sels.forEach(function(s){var els=w.document.querySelectorAll(s);els.forEach(function(el){try{el.remove();}catch(e){el.style.display='none';}});});}catch(e){}};purgeBadges();var h=function(){try{var b=w.AndroidHapticsBridge||(window.parent&&window.parent.AndroidHapticsBridge)||(window.top&&window.top.AndroidHapticsBridge);if(b&&b.click){b.click();return;}if(window.parent&&window.parent!==window){window.parent.postMessage({type:'HAPTIC_TRIGGER',effect:'click'},'*');}if(w.navigator&&w.navigator.vibrate){w.navigator.vibrate(10);}}catch(e){}};var s='button, [data-baseweb=\'tab\'], [role=\'button\'], summary, [data-testid^=\'baseButton\'], [data-baseweb=\'select\']';w.document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});w.document.addEventListener('click',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});}catch(e){}})()"/>
 """, unsafe_allow_html=True)
 
 # Haptic feedback & Badge remover script runner across iframes
@@ -694,25 +694,46 @@ components.html(
                             observer.observe(w.document.body, { childList: true, subtree: true });
                         }
 
-                        const triggerFeedback = function() {
+                        const triggerFeedback = function(effect) {
+                            effect = effect || 'click';
                             try {
+                                const b = w.AndroidHapticsBridge || (window.parent && window.parent.AndroidHapticsBridge) || (window.top && window.top.AndroidHapticsBridge);
+                                if (b) {
+                                    if (typeof b.click === 'function') {
+                                        b.click();
+                                        return;
+                                    }
+                                    if (typeof b.performHaptic === 'function') {
+                                        b.performHaptic(effect);
+                                        return;
+                                    }
+                                }
+
+                                const msg = { type: 'HAPTIC_TRIGGER', effect: effect };
+                                if (window.parent && window.parent !== window) {
+                                    window.parent.postMessage(msg, '*');
+                                }
+                                if (window.top && window.top !== window && window.top !== window.parent) {
+                                    window.top.postMessage(msg, '*');
+                                }
+
                                 if (w.navigator && w.navigator.vibrate) {
-                                    w.navigator.vibrate(12);
+                                    w.navigator.vibrate(10);
                                 }
                             } catch(e) {}
                         };
 
-                        const selector = 'button, [data-baseweb="tab"], [role="button"], summary, [data-testid^="baseButton"], [data-testid="stExpander"] details summary';
+                        const selector = 'button, [data-baseweb="tab"], [role="button"], summary, [data-testid^="baseButton"], [data-testid="stExpander"] details summary, [data-baseweb="select"]';
 
                         w.document.addEventListener('pointerdown', function(e) {
                             if (e.target && e.target.closest(selector)) {
-                                triggerFeedback();
+                                triggerFeedback('click');
                             }
                         }, { passive: true, capture: true });
 
                         w.document.addEventListener('click', function(e) {
                             if (e.target && e.target.closest(selector)) {
-                                triggerFeedback();
+                                triggerFeedback('click');
                             }
                         }, { passive: true, capture: true });
                     } catch(err) {}
