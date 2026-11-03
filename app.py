@@ -552,6 +552,50 @@ st.markdown("""
         }
     }
 
+    /* Hide Streamlit Cloud Watermark Crown, Host Badges, and Developer Avatar */
+    footer,
+    footer:after,
+    #MainMenu,
+    [data-testid="stToolbar"],
+    [data-testid="stDecoration"],
+    [data-testid="stStatusWidget"],
+    [data-testid="manage-app-button"],
+    #manage-app-button,
+    div[class*="viewerBadge"],
+    div[class*="ViewerBadge"],
+    div[class*="viewer_badge"],
+    div[class*="ProfileBadge"],
+    div[class*="floatingBadge"],
+    div[class*="HostBadge"],
+    div[class*="stDeployButton"],
+    div[class*="stAppDeployButton"],
+    .stAppDeployButton,
+    a[href*="streamlit.io/cloud"],
+    a[href*="share.streamlit.io"],
+    [data-testid="stToolbarActions"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        max-width: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        bottom: -9999px !important;
+        right: -9999px !important;
+        z-index: -9999 !important;
+    }
+
+    /* Catch any fixed bottom-right container that houses badges */
+    body > div[style*="fixed"][style*="bottom"][style*="right"],
+    #root > div[style*="fixed"][style*="bottom"][style*="right"],
+    .stApp > div[style*="fixed"][style*="bottom"][style*="right"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
     /* Responsive Mobile Layout Adjustments */
     @media (max-width: 768px) {
         .block-container {
@@ -567,20 +611,63 @@ st.markdown("""
         }
     }
 </style>
-<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" style="display:none;" onload="(function(){try{var w=window.parent||window;if(w.__taxHapticMDReady)return;w.__taxHapticMDReady=true;var h=function(){try{if(w.navigator&&w.navigator.vibrate)w.navigator.vibrate(12);}catch(e){}};var s='button, [data-baseweb=\\'tab\\'], [role=\\'button\\'], summary, [data-testid^=\\'baseButton\\']';w.document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});w.document.addEventListener('click',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});}catch(e){}})()"/>
+<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" style="display:none;" onload="(function(){try{var w=window.parent||window;if(w.__taxHapticMDReady)return;w.__taxHapticMDReady=true;var purgeBadges=function(){try{var sels=['#manage-app-button','[data-testid=\'manage-app-button\']','[class*=\'viewerBadge\']','[class*=\'ViewerBadge\']','[class*=\'ProfileBadge\']','[class*=\'floatingBadge\']','[class*=\'HostBadge\']','[class*=\'stDeployButton\']','footer','a[href*=\'streamlit.io/cloud\']','a[href*=\'share.streamlit.io\']'];sels.forEach(function(s){var els=w.document.querySelectorAll(s);els.forEach(function(el){try{el.remove();}catch(e){el.style.display='none';}});});}catch(e){}};purgeBadges();var h=function(){try{if(w.navigator&&w.navigator.vibrate)w.navigator.vibrate(12);}catch(e){}};var s='button, [data-baseweb=\'tab\'], [role=\'button\'], summary, [data-testid^=\'baseButton\']';w.document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});w.document.addEventListener('click',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});}catch(e){}})()"/>
 """, unsafe_allow_html=True)
 
-# Haptic feedback script runner across iframes
+# Haptic feedback & Badge remover script runner across iframes
 components.html(
     """
     <script>
     (function() {
-        function setupHaptic() {
+        function setupHapticAndCleanBadges() {
             try {
                 const targets = [window, window.parent, window.top];
                 targets.forEach(function(w) {
                     if (!w) return;
                     try {
+                        const purgeBadges = function() {
+                            try {
+                                const badgeSelectors = [
+                                    '#manage-app-button',
+                                    '[data-testid="manage-app-button"]',
+                                    '[class*="viewerBadge"]',
+                                    '[class*="ViewerBadge"]',
+                                    '[class*="ProfileBadge"]',
+                                    '[class*="floatingBadge"]',
+                                    '[class*="HostBadge"]',
+                                    '[class*="stDeployButton"]',
+                                    'footer',
+                                    'a[href*="streamlit.io/cloud"]',
+                                    'a[href*="share.streamlit.io"]'
+                                ];
+                                badgeSelectors.forEach(function(s) {
+                                    const nodes = w.document.querySelectorAll(s);
+                                    nodes.forEach(function(node) {
+                                        try {
+                                            node.remove();
+                                        } catch(e) {
+                                            node.style.setProperty('display', 'none', 'important');
+                                            node.style.setProperty('visibility', 'hidden', 'important');
+                                        }
+                                    });
+                                });
+
+                                const fixedNodes = w.document.querySelectorAll('div, a, button');
+                                fixedNodes.forEach(function(node) {
+                                    if (node && node.className && typeof node.className === 'string') {
+                                        const lower = node.className.toLowerCase();
+                                        if (lower.includes('viewerbadge') || lower.includes('manageapp')) {
+                                            try {
+                                                node.remove();
+                                            } catch(e) {
+                                                node.style.display = 'none';
+                                            }
+                                        }
+                                    }
+                                });
+                            } catch(e) {}
+                        };
+
                         const makeSelectsReadOnly = function() {
                             try {
                                 const inputs = w.document.querySelectorAll('[data-baseweb="select"] input');
@@ -592,6 +679,8 @@ components.html(
                                 });
                             } catch(e) {}
                         };
+
+                        purgeBadges();
                         makeSelectsReadOnly();
 
                         if (w.__taxHapticReady) return;
@@ -599,6 +688,7 @@ components.html(
 
                         const observer = new MutationObserver(function() {
                             makeSelectsReadOnly();
+                            purgeBadges();
                         });
                         if (w.document.body) {
                             observer.observe(w.document.body, { childList: true, subtree: true });
@@ -629,9 +719,10 @@ components.html(
                 });
             } catch(e) {}
         }
-        setupHaptic();
-        setTimeout(setupHaptic, 300);
-        setTimeout(setupHaptic, 1000);
+        setupHapticAndCleanBadges();
+        setTimeout(setupHapticAndCleanBadges, 300);
+        setTimeout(setupHapticAndCleanBadges, 1000);
+        setTimeout(setupHapticAndCleanBadges, 2500);
     })();
     </script>
     """,
