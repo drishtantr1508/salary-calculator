@@ -552,7 +552,7 @@ st.markdown("""
         }
     }
 
-    /* Hide Streamlit Cloud Watermark Crown, Host Badges, and Developer Avatar */
+    /* Hide Streamlit Cloud Watermark Crown, Host Badges, Embed Footer, and Developer Avatar */
     footer,
     footer:after,
     #MainMenu,
@@ -561,6 +561,13 @@ st.markdown("""
     [data-testid="stStatusWidget"],
     [data-testid="manage-app-button"],
     #manage-app-button,
+    [data-testid="stEmbedFooter"],
+    div[class*="stEmbedFooter"],
+    div[class*="embeddedFooter"],
+    div[class*="embedFooter"],
+    div[class*="bottomBar"],
+    [data-testid="stBottom"],
+    div[class*="stBottom"],
     div[class*="viewerBadge"],
     div[class*="ViewerBadge"],
     div[class*="viewer_badge"],
@@ -572,6 +579,9 @@ st.markdown("""
     .stAppDeployButton,
     a[href*="streamlit.io/cloud"],
     a[href*="share.streamlit.io"],
+    a[href*="streamlit.io/?utm_source=embed"],
+    div:has(> a[href*="streamlit.io"]),
+    div:has(> button[title="Fullscreen"]),
     [data-testid="stToolbarActions"] {
         display: none !important;
         visibility: hidden !important;
@@ -630,6 +640,13 @@ components.html(
                                 const badgeSelectors = [
                                     '#manage-app-button',
                                     '[data-testid="manage-app-button"]',
+                                    '[data-testid="stEmbedFooter"]',
+                                    'div[class*="stEmbedFooter"]',
+                                    'div[class*="embeddedFooter"]',
+                                    'div[class*="embedFooter"]',
+                                    'div[class*="bottomBar"]',
+                                    '[data-testid="stBottom"]',
+                                    'div[class*="stBottom"]',
                                     '[class*="viewerBadge"]',
                                     '[class*="ViewerBadge"]',
                                     '[class*="ProfileBadge"]',
@@ -638,7 +655,8 @@ components.html(
                                     '[class*="stDeployButton"]',
                                     'footer',
                                     'a[href*="streamlit.io/cloud"]',
-                                    'a[href*="share.streamlit.io"]'
+                                    'a[href*="share.streamlit.io"]',
+                                    'a[href*="streamlit.io/?utm_source=embed"]'
                                 ];
                                 badgeSelectors.forEach(function(s) {
                                     const nodes = w.document.querySelectorAll(s);
