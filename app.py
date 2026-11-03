@@ -237,13 +237,37 @@ st.markdown("""
         font-size: 1.4rem;
         font-weight: 700;
         letter-spacing: -0.02em;
-        color: var(--text-main);
+        color: var(--text-color, #111827) !important;
         margin: 0;
     }
     .app-sub {
         font-size: 0.8rem;
-        color: var(--text-muted);
+        color: var(--text-color, #6b7280) !important;
+        opacity: 0.75;
         margin-top: 2px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .app-title {
+            color: #f8fafc !important;
+        }
+        .app-sub {
+            color: #94a3b8 !important;
+            opacity: 1 !important;
+        }
+    }
+
+    [data-theme="dark"] .app-title,
+    [data-base-theme="dark"] .app-title,
+    .stApp[data-theme="dark"] .app-title {
+        color: #f8fafc !important;
+    }
+
+    [data-theme="dark"] .app-sub,
+    [data-base-theme="dark"] .app-sub,
+    .stApp[data-theme="dark"] .app-sub {
+        color: #94a3b8 !important;
+        opacity: 1 !important;
     }
 
     /* Clean Minimalist KPI Card */
@@ -626,7 +650,7 @@ st.markdown("""
         }
     }
 </style>
-<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" style="display:none;" onload="(function(){try{var w=window.parent||window;if(w.__taxHapticMDReady)return;w.__taxHapticMDReady=true;var purgeBadges=function(){try{var sels=['#manage-app-button','[data-testid=\'manage-app-button\']','[class*=\'viewerBadge\']','[class*=\'ViewerBadge\']','[class*=\'embeddedAppMetaInfoBar\']','[data-testid=\'stEmbedFooter\']','footer','a[href*=\'streamlit.io/cloud\']','a[href*=\'share.streamlit.io\']'];sels.forEach(function(s){var els=w.document.querySelectorAll(s);els.forEach(function(el){try{el.remove();}catch(e){el.style.display='none';}});});}catch(e){}};purgeBadges();var h=function(){try{var b=w.AndroidHapticsBridge||(window.parent&&window.parent.AndroidHapticsBridge)||(window.top&&window.top.AndroidHapticsBridge);if(b&&b.click){b.click();return;}if(window.parent&&window.parent!==window){window.parent.postMessage({type:'HAPTIC_TRIGGER',effect:'click'},'*');}if(w.navigator&&w.navigator.vibrate){w.navigator.vibrate(10);}}catch(e){}};var s='button, [data-baseweb=\'tab\'], [role=\'button\'], summary, [data-testid^=\'baseButton\'], [data-baseweb=\'select\']';w.document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});w.document.addEventListener('click',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});}catch(e){}})()"/>
+<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" style="display:none;" onload="(function(){try{var w=window.parent||window;if(w.__taxHapticMDReady)return;w.__taxHapticMDReady=true;var purgeBadges=function(){try{var sels=['#manage-app-button','[data-testid=\'manage-app-button\']','[class*=\'viewerBadge\']','[class*=\'ViewerBadge\']','[class*=\'embeddedAppMetaInfoBar\']','[data-testid=\'stEmbedFooter\']','footer','a[href*=\'streamlit.io/cloud\']','a[href*=\'share.streamlit.io\']'];sels.forEach(function(s){var els=w.document.querySelectorAll(s);els.forEach(function(el){try{el.remove();}catch(e){el.style.display='none';}});});}catch(e){}};var syncTheme=function(){try{var isDark=(w.matchMedia&&w.matchMedia('(prefers-color-scheme: dark)').matches);var app=w.document.querySelector('.stApp');if(app){var bg=w.getComputedStyle(app).backgroundColor;if(bg&&(bg.includes('14, 17, 23')||bg.includes('14,17,23')||bg==='rgb(0, 0, 0)'||bg==='#0e1117'||bg.includes('18,')||bg.includes('24,'))){isDark=true;}var tc=w.getComputedStyle(app).color;if(tc&&(tc.includes('250')||tc.includes('255')||tc.includes('248'))){isDark=true;}}var titles=w.document.querySelectorAll('.app-title');titles.forEach(function(t){t.style.setProperty('color',isDark?'#f8fafc':'#111827','important');});var subs=w.document.querySelectorAll('.app-sub');subs.forEach(function(s){s.style.setProperty('color',isDark?'#94a3b8':'#6b7280','important');});}catch(e){}};purgeBadges();syncTheme();var h=function(){try{var b=w.AndroidHapticsBridge||(window.parent&&window.parent.AndroidHapticsBridge)||(window.top&&window.top.AndroidHapticsBridge);if(b&&b.click){b.click();return;}if(window.parent&&window.parent!==window){window.parent.postMessage({type:'HAPTIC_TRIGGER',effect:'click'},'*');}if(w.navigator&&w.navigator.vibrate){w.navigator.vibrate(10);}}catch(e){}};var s='button, [data-baseweb=\'tab\'], [role=\'button\'], summary, [data-testid^=\'baseButton\'], [data-baseweb=\'select\']';w.document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});w.document.addEventListener('click',function(e){if(e.target&&e.target.closest(s))h();},{passive:true,capture:true});}catch(e){}})()"/>
 """, unsafe_allow_html=True)
 
 # Haptic feedback & Badge remover script runner across iframes
@@ -709,8 +733,27 @@ components.html(
                             } catch(e) {}
                         };
 
+                        const syncTheme = function() {
+                            try {
+                                const isSystemDark = w.matchMedia && w.matchMedia('(prefers-color-scheme: dark)').matches;
+                                const app = w.document.querySelector('.stApp');
+                                let isDark = isSystemDark;
+                                if (app) {
+                                    const bg = w.getComputedStyle(app).backgroundColor;
+                                    if (bg && (bg.includes('14, 17, 23') || bg.includes('14,17,23') || bg === 'rgb(0, 0, 0)' || bg === '#0e1117')) {
+                                        isDark = true;
+                                    }
+                                }
+                                const titles = w.document.querySelectorAll('.app-title');
+                                titles.forEach(t => t.style.setProperty('color', isDark ? '#f8fafc' : '#111827', 'important'));
+                                const subs = w.document.querySelectorAll('.app-sub');
+                                subs.forEach(s => s.style.setProperty('color', isDark ? '#94a3b8' : '#6b7280', 'important'));
+                            } catch(e) {}
+                        };
+
                         purgeBadges();
                         makeSelectsReadOnly();
+                        syncTheme();
 
                         if (w.__taxHapticReady) return;
                         w.__taxHapticReady = true;
@@ -718,6 +761,7 @@ components.html(
                         const observer = new MutationObserver(function() {
                             makeSelectsReadOnly();
                             purgeBadges();
+                            syncTheme();
                         });
                         if (w.document.body) {
                             observer.observe(w.document.body, { childList: true, subtree: true });
