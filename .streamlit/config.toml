@@ -1,5 +1,2 @@
-[theme]
-base = "system"
-
 [client]
 toolbarMode = "minimal"
